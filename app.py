@@ -93,23 +93,87 @@ def check_wipe_schedule():
             send_message("🔥 **WEEKLY WIPE JUST HAPPENED!** 🔥\nFresh start! Join now!")
             update_cooldown("wipe_hype")
 
+def format_uptime(seconds):
+    """Format uptime in human readable format"""
+    days = seconds // 86400
+    hours = (seconds % 86400) // 3600
+    minutes = (seconds % 3600) // 60
+    
+    if days > 0:
+        return f"{days}d {hours}h {minutes}m"
+    elif hours > 0:
+        return f"{hours}h {minutes}m"
+    else:
+        return f"{minutes}m"
+
+def get_wipe_info(server_data):
+    """Get wipe information from server data"""
+    attributes = server_data.get('attributes', {})
+    details = attributes.get('details', {})
+    
+    last_wipe_str = details.get('rust_last_wipe', None)
+    
+    if not last_wipe_str:
+        return None, None, None
+    
+    # Parse last wipe date
+    try:
+        last_wipe = datetime.datetime.fromisoformat(last_wipe_str.replace('Z', '+00:00'))
+        now = datetime.datetime.now(datetime.timezone.utc)
+        
+        # Calculate next wipe (typically 7 days for weekly)
+        next_wipe = last_wipe + datetime.timedelta(days=7)
+        time_until_wipe = next_wipe - now
+        
+        days_until = time_until_wipe.days
+        hours_until = time_until_wipe.seconds // 3600
+        
+        return last_wipe, next_wipe, (days_until, hours_until)
+    except Exception as e:
+        print(f"Error parsing wipe date: {e}")
+        return None, None, None
+
 def check_server_status():
-    """Check server player count and send alerts"""
+    """Check server status and send enhanced stats"""
     server_data = get_server_data()
     if not server_data:
         return
     
-    players = server_data.get('players', 0)
-    max_players = server_data.get('maxPlayers', 0)
+    attributes = server_data.get('attributes', {})
+    players = attributes.get('players', 0)
+    max_players = attributes.get('maxPlayers', 0)
     
     # High population alert (adjusted for 50-player server)
     if players > 40 and check_cooldown("high_pop"):
         send_message(f"👥 **Server is POPPING!**\n{players}/{max_players} players online!")
         update_cooldown("high_pop")
     
-    # Daily status update (every 4 hours)
+    # Enhanced status update (every 4 hours)
     if check_cooldown("daily_status"):
-        send_message(f"📊 **Server Status**\n{players}/{max_players} players online")
+        # Get wipe information
+        last_wipe, next_wipe, time_until = get_wipe_info(server_data)
+        
+        message = f"🌐 **Server Status**\n\n"
+        message += f"👥 **Players**: {players}/{max_players} online\n"
+        message += f"🟢 **Status**: Online ✅\n"
+        
+        if last_wipe:
+            message += f"🗓️ **Last Wipe**: {last_wipe.strftime('%B %d, %Y')}\n"
+        
+        if next_wipe and time_until:
+            days_until, hours_until = time_until
+            message += f"⏰ **Next Wipe**: {next_wipe.strftime('%B %d, %Y')}\n"
+            message += f"📅 **Days Until Wipe**: {days_until} days, {hours_until} hours\n"
+            
+            # Add urgency indicator
+            if days_until <= 1:
+                message += f"⚠️ **Wipe coming soon!**"
+            elif days_until <= 3:
+                message += f"📢 **Wipe this week!**"
+            else:
+                message += f"🕐 **Plenty of time to build!**"
+        
+        send_message(message)
         update_cooldown("daily_status")
 
 def send_restart_alert():
