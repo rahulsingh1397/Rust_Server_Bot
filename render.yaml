@@ -1,11 +1,11 @@
 services:
   # Rust Discord Bot Service
-  - type: worker
+  - type: web
     name: rust-discord-bot
     env: python
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: python app.py
+    startCommand: python web_app.py
     envVars:
       - key: DISCORD_WEBHOOK_URL
         sync: false
