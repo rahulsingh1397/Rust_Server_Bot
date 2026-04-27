@@ -144,7 +144,7 @@ def check_server_status():
     max_players = attributes.get('maxPlayers', 0)
     
     # High population alert (adjusted for 50-player server)
-    if players > 40 and check_cooldown("high_pop"):
+    if players > 30 and check_cooldown("high_pop"):
         send_message(f"👥 **Server is POPPING!**\n{players}/{max_players} players online!")
         update_cooldown("high_pop")
     
