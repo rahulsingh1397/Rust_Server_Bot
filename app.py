@@ -32,7 +32,7 @@ COOLDOWNS = {
     "high_pop": 60,      # 1 hour
     "wipe_hype": 60,     # 1 hour  
     "restart_alert": 15, # 15 minutes
-    "daily_status": 240  # 4 hours
+    "daily_status": 60,  # 1 hour
 }
 
 def send_message(message):
