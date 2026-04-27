@@ -57,7 +57,7 @@ def get_server_data():
         if response.status_code == 200:
             data = response.json()
             if data['data']:
-                return data['data'][0]['attributes']
+                return data['data'][0]  # Return full server object, not just attributes
         return None
     except Exception as e:
         print(f"❌ Error fetching server data: {e}")
