@@ -1,0 +1,16 @@
+services:
+  # Rust Discord Bot Service
+  - type: worker
+    name: rust-discord-bot
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    envVars:
+      - key: DISCORD_WEBHOOK_URL
+        sync: false
+        value: "https://discord.com/api/webhooks/1497430809995382845/QendIE1gVAQ6z3zrNeXY5k99N7cvpTQjoAmTiZiclWcvEgSdaY8IIEOdL9TBLnHbEOED"
+      - key: SERVER_NAME
+        sync: false
+        value: "IND-US Valley [Vanilla+ | Weekly | Merged Outpost | Max : 5]"
+    autoDeploy: true
